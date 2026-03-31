@@ -1,126 +1,67 @@
-# taskos — AI Agent Guide
+# AGENT.md — taskos 操作リファレンス
 
-This document explains how AI agents (Claude Code, Codex, etc.) should use taskos to manage tasks within a project.
+このファイルは AI エージェントが実行時に参照する操作仕様です。
+プロジェクトへの組み込み手順（CLAUDE.md の書き方など）は [docs/agent-integration.md](docs/agent-integration.md) を参照してください。
 
-## Setup Check
+---
 
-Before using taskos, verify it's initialized:
-
-```bash
-node --experimental-sqlite /path/to/taskos/dist/cli.js list
-# If you see: "Run taskos init first" → run init first
-```
-
-## Core Workflow
-
-### 1. Discover existing tasks
+## 基本フロー
 
 ```bash
-# List all open tasks
-node --experimental-sqlite /path/to/dist/cli.js list --status todo
-node --experimental-sqlite /path/to/dist/cli.js list --status in-progress
+# 1. 未着手タスクを確認
+taskos list --status todo --json
 
-# Get full details for a specific task (AI-optimized format)
-node --experimental-sqlite /path/to/dist/cli.js show <id> --aggregate
+# 2. タスクの詳細を取得（これだけで作業に必要な情報が揃う）
+taskos show <id> --aggregate
+
+# 3. 作業開始を宣言
+taskos update <id> --status in-progress
+
+# 4. ファイルを作成・変更したら記録
+taskos link <id> <filepath> --message "実装内容の説明"
+
+# 5. 完了
+taskos done <id>
 ```
 
-The `--aggregate` flag returns a compact JSON containing everything needed to work on a task:
-```json
-{
-  "id": "abc12345",
-  "title": "...",
-  "summary": "...",
-  "status": "todo",
-  "priority": "high",
-  "acceptance_criteria": "...",
-  "dependencies": ["other-id"],
-  "references": ["src/file.ts"],
-  "recent_logs": [
-    { "message": "...", "filepath": "src/file.ts", "created_at": "..." }
-  ],
-  "notes": "...",
-  "markdown_file": ".taskos/tasks/abc12345.md"
-}
-```
+---
 
-Read `markdown_file` for full human-authored context.
+## コマンドリファレンス
 
-### 2. Claim a task before starting
+| コマンド | 説明 |
+|---------|------|
+| `taskos list --json` | 全タスク一覧（JSON）|
+| `taskos list --status <s> --json` | ステータスで絞り込み |
+| `taskos list --priority <p> --json` | 優先度で絞り込み |
+| `taskos show <id> --aggregate` | AI 向け Aggregate JSON |
+| `taskos update <id> --status <s>` | ステータス更新 |
+| `taskos update <id> --notes <text>` | メモを追記 |
+| `taskos done <id>` | 完了にする |
+| `taskos link <id> <filepath>` | ファイルを紐付け・ログ記録 |
 
-```bash
-node --experimental-sqlite /path/to/dist/cli.js update <id> --status in-progress
-```
+## ステータス値
 
-### 3. Link artifacts as you work
+`todo` → `in-progress` → `done` / `blocked` / `cancelled`
 
-When you create or modify files relevant to a task:
+- `done` → `todo` の巻き戻しは `--force` が必要
+- タスクは人間が作成するのが原則。サブタスクが必要な場合のみ `taskos add` を使う
 
-```bash
-node --experimental-sqlite /path/to/dist/cli.js link <id> src/auth.ts --message "Implemented JWT handler"
-node --experimental-sqlite /path/to/dist/cli.js link <id> tests/auth.test.ts --message "Added auth tests"
-```
+## Aggregate JSON の読み方
 
-### 4. Complete the task
+`taskos show <id> --aggregate` が返す主要フィールド：
 
-```bash
-node --experimental-sqlite /path/to/dist/cli.js done <id>
-```
+| フィールド | 用途 |
+|-----------|------|
+| `acceptance_criteria` | これを満たせば完了 |
+| `dependencies` | 先に完了すべきタスク ID |
+| `references` | 関連ファイルパス |
+| `recent_logs` | 直近の作業履歴（重複を避けるために確認）|
+| `markdown_file` | 長文仕様書のパス（必要なときだけ読む）|
 
-## Context Minimization
+## エラー対処
 
-To keep context usage low, prefer `--aggregate` over reading the DB directly.
-
-For listing tasks to decide what to work on:
-```bash
-# Get all open high-priority tasks as JSON
-node --experimental-sqlite /path/to/dist/cli.js list --status todo --priority high --json
-```
-
-## Creating Tasks (Human-in-the-loop)
-
-AI agents should generally **not** create tasks unilaterally. Tasks should be created by humans or explicitly instructed. If you need to create a subtask:
-
-```bash
-node --experimental-sqlite /path/to/dist/cli.js add "Subtask title" \
-  --summary "What and why" \
-  --priority medium \
-  --criteria "What done looks like" \
-  --deps <parent-task-id>
-```
-
-## Status Reference
-
-| Status | Meaning |
-|--------|---------|
-| `todo` | Not started |
-| `in-progress` | Being worked on |
-| `done` | Completed |
-| `blocked` | Blocked by external dependency |
-| `cancelled` | Cancelled, no longer needed |
-
-## Path Conventions
-
-The taskos CLI always operates relative to `process.cwd()`. Run commands from the project root where `.taskos/` lives.
-
-DB path can be overridden with `TASKOS_DB` env var for multi-project setups.
-
-## Error Handling
-
-- `"Run taskos init first"` → `.taskos/` not initialized in current directory
-- `"Task not found: <id>"` → ID doesn't exist
-- `"Changing status from done to todo requires --force"` → Use `--force` to override
-
-## Integration with Claude Code
-
-Add to your project's `CLAUDE.md`:
-
-```markdown
-## Task Management
-
-This project uses taskos. Before starting work:
-1. Run `taskos list --status todo --json` to see open tasks
-2. Pick a task and run `taskos update <id> --status in-progress`
-3. Use `taskos show <id> --aggregate` to get full context
-4. Link files as you work: `taskos link <id> <filepath>`
-5. Run `taskos done <id>` when complete
-```
+| メッセージ | 対処 |
+|-----------|------|
+| `Run taskos init first` | `taskos init` を実行 |
+| `Task not found: <id>` | ID を確認、`taskos list` で一覧取得 |
+| `requires --force` | ステータス遷移ルール違反。人間に確認を取る |

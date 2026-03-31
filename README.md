@@ -43,7 +43,10 @@ taskos list           # CLI で一覧表示
 
 ## AI エージェントとの連携
 
-`taskos show <id> --aggregate` で AI 向けの Aggregate JSON を取得できます。詳細は [AGENT.md](AGENT.md) を参照してください。
+`taskos show <id> --aggregate` で AI 向けの Aggregate JSON を取得できます。
+
+- エージェントが実行時に参照する操作仕様 → [AGENT.md](AGENT.md)
+- Claude Code・Codex への組み込み手順 → [docs/agent-integration.md](docs/agent-integration.md)
 
 ## 開発
 
