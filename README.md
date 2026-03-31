@@ -22,8 +22,15 @@ alias taskos="$(pwd)/bin/taskos"
 cd /your/project
 taskos init
 taskos add "認証を実装する" --priority high
-taskos serve --open   # Web UI を開く
-taskos list           # CLI で一覧表示
+taskos list
+```
+
+### Web UI
+
+```bash
+taskos serve         # http://localhost:3000 で起動
+taskos serve --open  # ブラウザも同時に開く
+taskos serve --port 8080  # ポート指定
 ```
 
 ## コマンド
