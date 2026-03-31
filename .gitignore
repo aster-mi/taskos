@@ -3,3 +3,4 @@ dist/
 .taskos/taskos.db
 *.db
 coverage/
+web/dist/

@@ -7,6 +7,7 @@ import { registerShowCommand } from './commands/show.js';
 import { registerUpdateCommand } from './commands/update.js';
 import { registerDoneCommand } from './commands/done.js';
 import { registerLinkCommand } from './commands/link.js';
+import { registerServeCommand } from './commands/serve.js';
 
 function formatError(error: unknown): string {
   if (error instanceof Error) {
@@ -27,6 +28,7 @@ export function createProgram(): Command {
   registerUpdateCommand(program);
   registerDoneCommand(program);
   registerLinkCommand(program);
+  registerServeCommand(program);
 
   return program;
 }
