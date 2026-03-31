@@ -4,7 +4,7 @@
   "description": "AI-first local task hub",
   "type": "module",
   "bin": {
-    "taskos": "./dist/cli.js"
+    "taskos": "./bin/taskos"
   },
   "scripts": {
     "build": "npm run build:web && tsup",

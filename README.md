@@ -13,7 +13,7 @@ git clone https://github.com/aster-mi/taskos
 cd taskos
 npm install && npm run build
 
-alias taskos="node --experimental-sqlite $(pwd)/dist/cli.js"
+alias taskos="$(pwd)/bin/taskos"
 ```
 
 ## クイックスタート
