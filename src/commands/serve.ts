@@ -11,6 +11,7 @@ import { requireInitialized } from '../paths.js';
 type ServeOptions = {
   open?: boolean;
   port?: string;
+  force?: boolean;
 };
 
 const webDistPath = path.resolve(
@@ -37,7 +38,26 @@ export function registerServeCommand(program: Command): void {
     .description('Start the local taskos web server')
     .option('-p, --port <number>', 'Port to listen on', '3000')
     .option('--open', 'Open the app in a browser')
-    .action((options: ServeOptions) => {
+    .option('--force', 'Kill any process already using the port before starting')
+    .action(async (options: ServeOptions) => {
+      const parsedPort = Number.parseInt(options.port ?? '3000', 10);
+      if (!Number.isInteger(parsedPort) || parsedPort <= 0) {
+        throw new Error('Port must be a positive integer');
+      }
+
+      if (options.force) {
+        const { execSync } = await import('node:child_process');
+        try {
+          const pid = execSync(`lsof -ti :${parsedPort}`, { encoding: 'utf8' }).trim();
+          if (pid) {
+            execSync(`kill -9 ${pid}`);
+            console.log(`Killed process ${pid} on port ${parsedPort}`);
+          }
+        } catch {
+          // no process on that port, nothing to do
+        }
+      }
+
       const db = requireInitialized();
       const app = createServer(db);
 
@@ -46,11 +66,6 @@ export function registerServeCommand(program: Command): void {
         app.get('*', (_req: Request, res: Response) => {
           res.sendFile(path.join(webDistPath, 'index.html'));
         });
-      }
-
-      const parsedPort = Number.parseInt(options.port ?? '3000', 10);
-      if (!Number.isInteger(parsedPort) || parsedPort <= 0) {
-        throw new Error('Port must be a positive integer');
       }
 
       const server = app.listen(parsedPort, () => {
