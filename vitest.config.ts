@@ -6,5 +6,17 @@ export default defineConfig({
     forks: {
       execArgv: ['--experimental-sqlite'],
     },
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov', 'html'],
+      include: ['src/**/*.ts'],
+      exclude: ['src/cli.ts'],
+      thresholds: {
+        lines: 80,
+        functions: 80,
+        branches: 70,
+      },
+    },
   },
 });
+

@@ -48,8 +48,8 @@ type CreateTaskInput = Pick<Task, 'title'> &
   Partial<Omit<Task, 'id' | 'title' | 'created_at' | 'updated_at'>>;
 
 function parseJsonArray(value: string): string[] {
-  const parsed = JSON.parse(value);
-  return Array.isArray(parsed) ? parsed : [];
+  const parsed: unknown = JSON.parse(value);
+  return Array.isArray(parsed) ? (parsed as string[]) : [];
 }
 
 function mapTask(row: TaskRow): Task {
@@ -217,7 +217,13 @@ export function addTaskLog(
       INSERT INTO task_logs (id, task_id, message, filepath, created_at)
       VALUES (@id, @task_id, @message, @filepath, @created_at)
     `,
-  ).run(log as unknown as Record<string, unknown>);
+  ).run({
+    id: log.id,
+    task_id: log.task_id,
+    message: log.message,
+    filepath: log.filepath,
+    created_at: log.created_at,
+  });
 
   return log;
 }
@@ -225,5 +231,5 @@ export function addTaskLog(
 export function getTaskLogs(db: DatabaseSync, taskId: string): TaskLog[] {
   return db
     .prepare('SELECT * FROM task_logs WHERE task_id = ? ORDER BY created_at DESC, rowid DESC')
-    .all(taskId) as TaskLogRow[];
+    .all(taskId) as unknown as TaskLogRow[];
 }
