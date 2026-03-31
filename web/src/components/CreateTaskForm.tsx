@@ -15,6 +15,7 @@ export function CreateTaskForm({
   const [priority, setPriority] = useState<TaskPriority>('medium');
   const [acceptanceCriteria, setAcceptanceCriteria] = useState('');
   const [notes, setNotes] = useState('');
+  const isSubmitDisabled = isSubmitting || title.trim() === '';
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -72,7 +73,7 @@ export function CreateTaskForm({
           Notes
           <textarea value={notes} onChange={(event) => setNotes(event.target.value)} rows={4} />
         </label>
-        <button className="primary-button" type="submit" disabled={isSubmitting}>
+        <button className="primary-button" type="submit" disabled={isSubmitDisabled}>
           {isSubmitting ? 'Saving…' : 'Create Task'}
         </button>
       </form>
