@@ -55,6 +55,6 @@ taskos serve --port 8080  # ポート指定
 - エージェントが実行時に参照する操作仕様 → [AGENT.md](AGENT.md)
 - Claude Code・Codex への組み込み手順 → [docs/agent-integration.md](docs/agent-integration.md)
 
-## 開発
+## 開発・アップデート
 
 [docs/development.md](docs/development.md) を参照してください。
