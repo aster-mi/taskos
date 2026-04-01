@@ -163,21 +163,24 @@ export default function App() {
           ))}
         </div>
 
-        <div className="filter-tabs" role="tablist" aria-label="Task status filters">
-          {FILTERS.map((tab) => (
-            <button
-              key={tab.value}
-              className={tab.value === filter ? 'filter-tab active' : 'filter-tab'}
-              onClick={() => handleFilterChange(tab.value)}
-            >
-              {tab.label}
-            </button>
-          ))}
+        <div className="sidebar-section">
+          <p className="eyebrow">Status</p>
+          <div className="filter-tabs" role="tablist" aria-label="Task status filters">
+            {FILTERS.map((tab) => (
+              <button
+                key={tab.value}
+                className={tab.value === filter ? 'filter-tab active' : 'filter-tab'}
+                onClick={() => handleFilterChange(tab.value)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {allTags.length > 0 && (
-          <div className="tag-filter-section">
-            <p className="tag-filter-label">Tags</p>
+          <div className="sidebar-section">
+            <p className="eyebrow">Tags{selectedTags.length > 0 ? ` · ${selectedTags.length} active` : ''}</p>
             <div className="tag-filter-badges">
               {allTags.map((tag) => (
                 <button
