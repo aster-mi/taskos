@@ -13,6 +13,7 @@ function makeTask(overrides: Partial<Task> = {}): Task {
     priority: 'high',
     dependencies: [],
     references: [],
+    tags: [],
     acceptance_criteria: '',
     notes: '',
     created_at: '2026-04-01T00:00:00.000Z',

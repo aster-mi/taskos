@@ -160,10 +160,23 @@ h2 {
 
 .status-badge,
 .priority-badge,
+.tag-badge,
 code {
   border-radius: 999px;
   padding: 4px 10px;
   font-size: 0.8rem;
+}
+
+.tag-badge {
+  background: rgba(100, 80, 160, 0.22);
+  color: #c5b8f0;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
 }
 
 code {

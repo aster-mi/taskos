@@ -9,6 +9,7 @@ export interface Task {
   priority: TaskPriority;
   dependencies: string[];
   references: string[];
+  tags: string[];
   acceptance_criteria: string;
   notes: string;
   created_at: string;
@@ -24,6 +25,7 @@ export interface TaskAggregate {
   acceptance_criteria: string;
   dependencies: string[];
   references: string[];
+  tags: string[];
   recent_logs: Array<{
     message: string;
     filepath?: string;
@@ -41,5 +43,6 @@ export interface CreateTaskInput {
   priority?: TaskPriority;
   acceptance_criteria?: string;
   dependencies?: string[];
+  tags?: string[];
   notes?: string;
 }

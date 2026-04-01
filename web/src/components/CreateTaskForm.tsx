@@ -15,6 +15,7 @@ export function CreateTaskForm({
   const [priority, setPriority] = useState<TaskPriority>('medium');
   const [acceptanceCriteria, setAcceptanceCriteria] = useState('');
   const [notes, setNotes] = useState('');
+  const [tags, setTags] = useState('');
   const isSubmitDisabled = isSubmitting || title.trim() === '';
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -25,12 +26,14 @@ export function CreateTaskForm({
       priority,
       acceptance_criteria: acceptanceCriteria,
       notes,
+      tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
     });
     setTitle('');
     setSummary('');
     setPriority('medium');
     setAcceptanceCriteria('');
     setNotes('');
+    setTags('');
   }
 
   return (
@@ -67,6 +70,14 @@ export function CreateTaskForm({
             value={acceptanceCriteria}
             onChange={(event) => setAcceptanceCriteria(event.target.value)}
             rows={4}
+          />
+        </label>
+        <label>
+          Tags
+          <input
+            value={tags}
+            onChange={(event) => setTags(event.target.value)}
+            placeholder="feature, bug, frontend（カンマ区切り）"
           />
         </label>
         <label>

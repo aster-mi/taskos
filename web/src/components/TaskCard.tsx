@@ -24,6 +24,13 @@ export function TaskCard({
       </div>
       <strong>{task.title}</strong>
       <p>{task.summary || 'No summary yet.'}</p>
+      {task.tags.length > 0 && (
+        <div className="tag-list">
+          {task.tags.map((tag) => (
+            <span key={tag} className="tag-badge">{tag}</span>
+          ))}
+        </div>
+      )}
     </button>
   );
 }

@@ -11,6 +11,7 @@ describe('CreateTaskForm', () => {
     expect(screen.getByLabelText('Summary')).toBeInTheDocument();
     expect(screen.getByLabelText('Priority')).toBeInTheDocument();
     expect(screen.getByLabelText('Acceptance Criteria')).toBeInTheDocument();
+    expect(screen.getByLabelText('Tags')).toBeInTheDocument();
     expect(screen.getByLabelText('Notes')).toBeInTheDocument();
   });
 
@@ -40,6 +41,7 @@ describe('CreateTaskForm', () => {
         summary: 'Summarize changes',
         priority: 'urgent',
         acceptance_criteria: 'Approved by team',
+        tags: [],
         notes: 'Include screenshots',
       }),
     );
@@ -49,6 +51,7 @@ describe('CreateTaskForm', () => {
       expect(screen.getByLabelText('Summary')).toHaveValue('');
       expect(screen.getByLabelText('Priority')).toHaveValue('medium');
       expect(screen.getByLabelText('Acceptance Criteria')).toHaveValue('');
+      expect(screen.getByLabelText('Tags')).toHaveValue('');
       expect(screen.getByLabelText('Notes')).toHaveValue('');
     });
   });

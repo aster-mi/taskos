@@ -21,6 +21,7 @@ function makeAggregate(overrides: Partial<TaskAggregate> = {}): TaskAggregate {
     acceptance_criteria: 'Users can open it',
     dependencies: ['task_0'],
     references: ['src/dashboard.tsx'],
+    tags: [],
     recent_logs: [
       {
         message: 'Added dashboard shell',

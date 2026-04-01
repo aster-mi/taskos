@@ -40,6 +40,9 @@ export function TaskDetail({
       <div className="detail-meta">
         <span className={`status-badge status-${task.status}`}>{task.status}</span>
         <span className={`priority-badge priority-${task.priority}`}>{task.priority}</span>
+        {task.tags.map((tag) => (
+          <span key={tag} className="tag-badge">{tag}</span>
+        ))}
         <code>{task.id}</code>
       </div>
 
