@@ -12,6 +12,7 @@ describe('buildAggregate', () => {
       priority: 'high',
       dependencies: ['dep1'],
       references: ['src/index.ts'],
+      tags: [],
       acceptance_criteria: 'Diff reviewed',
       notes: 'Focus on regressions',
       created_at: '2026-04-01T00:00:00.000Z',

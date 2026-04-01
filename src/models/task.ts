@@ -14,10 +14,19 @@ export interface Task {
   priority: TaskPriority;
   dependencies: string[];
   references: string[];
+  tags: string[];
   acceptance_criteria: string;
   notes: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface TaskEvent {
+  id: string;
+  task_id: string;
+  status_from: string;
+  status_to: string;
+  changed_at: string;
 }
 
 export interface TaskLog {
@@ -36,6 +45,7 @@ type TaskRow = {
   priority: TaskPriority;
   dependencies: string;
   refs: string;
+  tags: string;
   acceptance_criteria: string;
   notes: string;
   created_at: string;
@@ -61,6 +71,7 @@ function mapTask(row: TaskRow): Task {
     priority: row.priority,
     dependencies: parseJsonArray(row.dependencies),
     references: parseJsonArray(row.refs),
+    tags: parseJsonArray(row.tags ?? '[]'),
     acceptance_criteria: row.acceptance_criteria,
     notes: row.notes,
     created_at: row.created_at,
@@ -78,6 +89,7 @@ export function createTask(db: DatabaseSync, data: CreateTaskInput): Task {
     priority: data.priority ?? 'medium',
     dependencies: data.dependencies ?? [],
     references: data.references ?? [],
+    tags: data.tags ?? [],
     acceptance_criteria: data.acceptance_criteria ?? '',
     notes: data.notes ?? '',
     created_at: now,
@@ -87,10 +99,10 @@ export function createTask(db: DatabaseSync, data: CreateTaskInput): Task {
   db.prepare(
     `
       INSERT INTO tasks (
-        id, title, summary, status, priority, dependencies, refs,
+        id, title, summary, status, priority, dependencies, refs, tags,
         acceptance_criteria, notes, created_at, updated_at
       ) VALUES (
-        @id, @title, @summary, @status, @priority, @dependencies, @refs,
+        @id, @title, @summary, @status, @priority, @dependencies, @refs, @tags,
         @acceptance_criteria, @notes, @created_at, @updated_at
       )
     `,
@@ -102,6 +114,7 @@ export function createTask(db: DatabaseSync, data: CreateTaskInput): Task {
     priority: task.priority,
     dependencies: JSON.stringify(task.dependencies),
     refs: JSON.stringify(task.references),
+    tags: JSON.stringify(task.tags),
     acceptance_criteria: task.acceptance_criteria,
     notes: task.notes,
     created_at: task.created_at,
@@ -118,7 +131,7 @@ export function getTask(db: DatabaseSync, id: string): Task | null {
 
 export function listTasks(
   db: DatabaseSync,
-  filters?: { status?: TaskStatus; priority?: TaskPriority },
+  filters?: { status?: TaskStatus; priority?: TaskPriority; tag?: string; since?: string },
 ): Task[] {
   const clauses: string[] = [];
   const params: Array<string> = [];
@@ -133,9 +146,19 @@ export function listTasks(
     params.push(filters.priority);
   }
 
+  if (filters?.tag) {
+    clauses.push("EXISTS (SELECT 1 FROM json_each(tags) WHERE value = ?)");
+    params.push(filters.tag);
+  }
+
+  if (filters?.since) {
+    clauses.push('updated_at >= ?');
+    params.push(filters.since);
+  }
+
   const where = clauses.length > 0 ? `WHERE ${clauses.join(' AND ')}` : '';
   const rows = db
-    .prepare(`SELECT * FROM tasks ${where} ORDER BY created_at DESC`)
+    .prepare(`SELECT * FROM tasks ${where} ORDER BY updated_at DESC`)
     .all(...params) as TaskRow[];
   return rows.map(mapTask);
 }
@@ -158,6 +181,10 @@ export function updateTask(db: DatabaseSync, id: string, data: Partial<Task>): T
     updated_at: new Date().toISOString(),
   };
 
+  if (data.status && data.status !== current.status) {
+    recordStatusEvent(db, id, current.status, data.status);
+  }
+
   db.prepare(
     `
       UPDATE tasks
@@ -167,6 +194,7 @@ export function updateTask(db: DatabaseSync, id: string, data: Partial<Task>): T
           priority = @priority,
           dependencies = @dependencies,
           refs = @refs,
+          tags = @tags,
           acceptance_criteria = @acceptance_criteria,
           notes = @notes,
           updated_at = @updated_at
@@ -180,6 +208,7 @@ export function updateTask(db: DatabaseSync, id: string, data: Partial<Task>): T
     priority: updated.priority,
     dependencies: JSON.stringify(updated.dependencies),
     refs: JSON.stringify(updated.references),
+    tags: JSON.stringify(updated.tags),
     acceptance_criteria: updated.acceptance_criteria,
     notes: updated.notes,
     updated_at: updated.updated_at,
@@ -188,7 +217,52 @@ export function updateTask(db: DatabaseSync, id: string, data: Partial<Task>): T
   return updated;
 }
 
+export function recordStatusEvent(
+  db: DatabaseSync,
+  taskId: string,
+  statusFrom: string,
+  statusTo: string,
+): void {
+  db.prepare(
+    `INSERT INTO task_events (id, task_id, status_from, status_to, changed_at)
+     VALUES (@id, @task_id, @status_from, @status_to, @changed_at)`,
+  ).run({
+    id: makeId(),
+    task_id: taskId,
+    status_from: statusFrom,
+    status_to: statusTo,
+    changed_at: new Date().toISOString(),
+  });
+}
+
+export function listEvents(
+  db: DatabaseSync,
+  filters?: { since?: string; statusTo?: string },
+): (TaskEvent & { task_title: string })[] {
+  const clauses: string[] = [];
+  const params: string[] = [];
+
+  if (filters?.since) {
+    clauses.push('e.changed_at >= ?');
+    params.push(filters.since);
+  }
+  if (filters?.statusTo) {
+    clauses.push('e.status_to = ?');
+    params.push(filters.statusTo);
+  }
+
+  const where = clauses.length > 0 ? `WHERE ${clauses.join(' AND ')}` : '';
+  return db
+    .prepare(
+      `SELECT e.*, t.title as task_title FROM task_events e
+       JOIN tasks t ON t.id = e.task_id
+       ${where} ORDER BY e.changed_at DESC`,
+    )
+    .all(...params) as unknown as (TaskEvent & { task_title: string })[];
+}
+
 export function deleteTask(db: DatabaseSync, id: string): void {
+  db.prepare('DELETE FROM task_events WHERE task_id = ?').run(id);
   db.prepare('DELETE FROM task_logs WHERE task_id = ?').run(id);
   db.prepare('DELETE FROM tasks WHERE id = ?').run(id);
 }

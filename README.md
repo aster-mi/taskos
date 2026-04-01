@@ -38,13 +38,15 @@ taskos serve --force  # 既存プロセスを kill して再起動
 | コマンド | 説明 |
 |---------|------|
 | `taskos init` | 初期化（DB・ディレクトリ作成）|
-| `taskos add <title>` | タスク作成 |
-| `taskos list` | 一覧表示 |
+| `taskos add <title>` | タスク作成（`--tag` でタグ付け）|
+| `taskos list` | 一覧表示（`--tag`, `--since` で絞り込み）|
 | `taskos show <id>` | 詳細表示（`--aggregate` で AI 向け JSON）|
 | `taskos update <id>` | フィールド・ステータス更新 |
 | `taskos done <id>` | 完了にする |
+| `taskos delete <id>` | タスクを削除 |
+| `taskos history` | ステータス変化の履歴（`--status done --since` で今日の完了など）|
 | `taskos link <id> <file>` | ファイルを紐付け |
-| `taskos serve` | Web UI を起動（`--port`, `--open`）|
+| `taskos serve` | Web UI を起動（`--port`, `--open`, `--force`）|
 
 詳細は [docs/cli.md](docs/cli.md) を参照してください。
 

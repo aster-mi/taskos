@@ -6,6 +6,8 @@ import { requireInitialized } from '../paths.js';
 type ListOptions = {
   status?: TaskStatus;
   priority?: TaskPriority;
+  tag?: string;
+  since?: string;
   json?: boolean;
 };
 
@@ -22,10 +24,17 @@ export function registerListCommand(program: Command): void {
     .description('List tasks')
     .option('-s, --status <status>', 'Filter by status')
     .option('-p, --priority <priority>', 'Filter by priority')
+    .option('--tag <tag>', 'Filter by tag')
+    .option('--since <date>', 'Show tasks updated on or after this date (YYYY-MM-DD or ISO)')
     .option('--json', 'Output JSON')
     .action((options: ListOptions) => {
       const db = requireInitialized();
-      const tasks = listTasks(db, { status: options.status, priority: options.priority });
+      const tasks = listTasks(db, {
+        status: options.status,
+        priority: options.priority,
+        tag: options.tag,
+        since: options.since,
+      });
 
       if (options.json) {
         console.log(JSON.stringify(tasks, null, 2));

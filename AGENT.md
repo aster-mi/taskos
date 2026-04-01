@@ -33,11 +33,16 @@ taskos done <id>
 | `taskos list --json` | 全タスク一覧（JSON）|
 | `taskos list --status <s> --json` | ステータスで絞り込み |
 | `taskos list --priority <p> --json` | 優先度で絞り込み |
+| `taskos list --tag <tag> --json` | タグで絞り込み |
+| `taskos list --since <date> --json` | 指定日以降に更新されたタスク |
 | `taskos show <id> --aggregate` | AI 向け Aggregate JSON |
 | `taskos update <id> --status <s>` | ステータス更新 |
 | `taskos update <id> --notes <text>` | メモを追記 |
+| `taskos update <id> --tag <tags>` | タグを設定（カンマ区切り）|
 | `taskos done <id>` | 完了にする |
+| `taskos delete <id>` | タスクを削除 |
 | `taskos link <id> <filepath>` | ファイルを紐付け・ログ記録 |
+| `taskos history --status done --since <date>` | 指定日以降の完了履歴 |
 
 ## ステータス値
 
@@ -55,6 +60,7 @@ taskos done <id>
 | `acceptance_criteria` | これを満たせば完了 |
 | `dependencies` | 先に完了すべきタスク ID |
 | `references` | 関連ファイルパス |
+| `tags` | タスクの分類ラベル |
 | `recent_logs` | 直近の作業履歴（重複を避けるために確認）|
 | `markdown_file` | 長文仕様書のパス（必要なときだけ読む）|
 

@@ -10,6 +10,7 @@ type AddOptions = {
   criteria?: string;
   deps?: string;
   notes?: string;
+  tag?: string;
 };
 
 export function registerAddCommand(program: Command): void {
@@ -22,6 +23,7 @@ export function registerAddCommand(program: Command): void {
     .option('-c, --criteria <criteria>', 'Acceptance criteria')
     .option('-d, --deps <deps>', 'Comma-separated dependency IDs')
     .option('-n, --notes <notes>', 'Task notes')
+    .option('--tag <tags>', 'Comma-separated tags')
     .action((title: string, options: AddOptions) => {
       const db = requireInitialized();
       const task = createTask(db, {
@@ -33,6 +35,9 @@ export function registerAddCommand(program: Command): void {
           ? options.deps.split(',').map((value) => value.trim()).filter(Boolean)
           : [],
         notes: options.notes,
+        tags: options.tag
+          ? options.tag.split(',').map((value) => value.trim()).filter(Boolean)
+          : [],
       });
       writeTaskMarkdown(task, getTaskLogs(db, task.id));
       console.log(`Created task ${task.id}: ${task.title}`);

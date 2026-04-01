@@ -7,6 +7,8 @@ import { registerListCommand } from './commands/list.js';
 import { registerShowCommand } from './commands/show.js';
 import { registerUpdateCommand } from './commands/update.js';
 import { registerDoneCommand } from './commands/done.js';
+import { registerDeleteCommand } from './commands/delete.js';
+import { registerHistoryCommand } from './commands/history.js';
 import { registerLinkCommand } from './commands/link.js';
 import { registerServeCommand } from './commands/serve.js';
 
@@ -28,6 +30,8 @@ export function createProgram(): Command {
   registerShowCommand(program);
   registerUpdateCommand(program);
   registerDoneCommand(program);
+  registerDeleteCommand(program);
+  registerHistoryCommand(program);
   registerLinkCommand(program);
   registerServeCommand(program);
 

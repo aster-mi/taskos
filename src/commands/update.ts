@@ -12,6 +12,7 @@ type UpdateOptions = {
   criteria?: string;
   notes?: string;
   deps?: string;
+  tag?: string;
   force?: boolean;
 };
 
@@ -37,6 +38,7 @@ export function registerUpdateCommand(program: Command): void {
     .option('-c, --criteria <criteria>', 'Acceptance criteria')
     .option('-n, --notes <notes>', 'Task notes')
     .option('-d, --deps <deps>', 'Comma-separated dependency IDs')
+    .option('--tag <tags>', 'Comma-separated tags')
     .option('--force', 'Force blocked status transitions')
     .action((id: string, options: UpdateOptions) => {
       const db = requireInitialized();
@@ -58,6 +60,9 @@ export function registerUpdateCommand(program: Command): void {
         notes: options.notes,
         dependencies: options.deps
           ? options.deps.split(',').map((value) => value.trim()).filter(Boolean)
+          : undefined,
+        tags: options.tag
+          ? options.tag.split(',').map((value) => value.trim()).filter(Boolean)
           : undefined,
       });
 
