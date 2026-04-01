@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { createTask, getTaskAggregate, listTasks, markDone, updateTask } from './api';
 import { CreateTaskForm } from './components/CreateTaskForm';
 import { HistoryView } from './components/HistoryView';
@@ -29,7 +29,7 @@ export default function App() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [selectedTask, setSelectedTask] = useState<TaskAggregate | null>(null);
   const [filter, setFilter] = useState<TaskStatus | 'all'>('all');
-  const [tagFilter, setTagFilter] = useState('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [view, setView] = useState<ViewMode>('list');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [loadingList, setLoadingList] = useState(true);
@@ -42,7 +42,6 @@ export default function App() {
     try {
       const nextTasks = await listTasks({
         ...(filter === 'all' ? {} : { status: filter }),
-        tag: tagFilter || undefined,
       });
       setTasks(nextTasks);
 
@@ -58,9 +57,20 @@ export default function App() {
     }
   }
 
+  const allTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    tasks.forEach((t) => t.tags.forEach((tag) => tagSet.add(tag)));
+    return Array.from(tagSet).sort();
+  }, [tasks]);
+
+  const filteredTasks = useMemo(() => {
+    if (selectedTags.length === 0) return tasks;
+    return tasks.filter((task) => selectedTags.every((tag) => task.tags.includes(tag)));
+  }, [tasks, selectedTags]);
+
   useEffect(() => {
     void refreshTasks();
-  }, [filter, tagFilter]);
+  }, [filter]);
 
   useEffect(() => {
     if (!selectedTaskId) {
@@ -121,7 +131,11 @@ export default function App() {
 
   function handleFilterChange(value: TaskStatus | 'all') {
     setFilter(value);
-    setTagFilter('');
+    setSelectedTags([]);
+  }
+
+  function toggleTag(tag: string) {
+    setSelectedTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
   }
 
   return (
@@ -161,15 +175,25 @@ export default function App() {
           ))}
         </div>
 
-        <input
-          className="tag-filter-input"
-          placeholder="Filter by tag…"
-          value={tagFilter}
-          onChange={(e) => setTagFilter(e.target.value)}
-        />
+        {allTags.length > 0 && (
+          <div className="tag-filter-section">
+            <p className="tag-filter-label">Tags</p>
+            <div className="tag-filter-badges">
+              {allTags.map((tag) => (
+                <button
+                  key={tag}
+                  className={selectedTags.includes(tag) ? 'tag-filter-badge active' : 'tag-filter-badge'}
+                  onClick={() => toggleTag(tag)}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <TaskList
-          tasks={tasks}
+          tasks={filteredTasks}
           isLoading={loadingList}
           selectedTaskId={selectedTaskId}
           onSelectTask={setSelectedTaskId}
@@ -183,7 +207,7 @@ export default function App() {
           <HistoryView />
         ) : view === 'kanban' ? (
           <KanbanBoard
-            tasks={tasks}
+            tasks={filteredTasks}
             selectedTaskId={selectedTaskId}
             onSelectTask={setSelectedTaskId}
           />
