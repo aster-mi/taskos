@@ -12,27 +12,10 @@ taskos をプロジェクトに導入したあと、各 AI エージェントに
 ## タスク管理
 
 このプロジェクトは taskos でタスクを管理しています。
-
-### 作業開始前
-\`\`\`bash
-taskos list --status todo --json          # 未着手タスクを確認
-taskos show <id> --aggregate             # 担当タスクの詳細を取得
-taskos update <id> --status in-progress  # 作業開始を宣言
-\`\`\`
-
-### 作業中
-\`\`\`bash
-taskos link <id> <filepath> --message "..." # 作成・編集したファイルを記録
-\`\`\`
-
-### 完了時
-\`\`\`bash
-taskos done <id>
-\`\`\`
-
-`taskos show <id> --aggregate` が返す JSON に、タスクの概要・受け入れ条件・依存関係・直近ログが含まれます。
-詳細な仕様は `aggregate.markdown_file` のパスにある Markdown を読んでください。
+操作ガイド（taskos のリポジトリパス含む）は `.taskos/AGENT.md` を参照してください。
 ```
+
+操作の詳細は `taskos init` で生成される `.taskos/AGENT.md` に、taskos リポジトリの実パスとともに記載されています。AI はそこを参照するだけで動作できます。
 
 ---
 
