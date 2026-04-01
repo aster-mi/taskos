@@ -96,4 +96,33 @@ describe('TaskDetail', () => {
     expect(screen.getAllByText('src/dashboard.tsx')[0]).toBeInTheDocument();
     expect(screen.getByText('Added dashboard shell')).toBeInTheDocument();
   });
+
+  test('renders tag badges in meta row', () => {
+    render(
+      <TaskDetail
+        task={makeAggregate({ tags: ['feature', 'backend'] })}
+        isLoading={false}
+        onStart={() => {}}
+        onDone={() => {}}
+        onBlock={() => {}}
+      />,
+    );
+
+    expect(screen.getByText('feature')).toBeInTheDocument();
+    expect(screen.getByText('backend')).toBeInTheDocument();
+  });
+
+  test('renders no tag badges when tags is empty', () => {
+    const { container } = render(
+      <TaskDetail
+        task={makeAggregate({ tags: [] })}
+        isLoading={false}
+        onStart={() => {}}
+        onDone={() => {}}
+        onBlock={() => {}}
+      />,
+    );
+
+    expect(container.querySelectorAll('.tag-badge')).toHaveLength(0);
+  });
 });

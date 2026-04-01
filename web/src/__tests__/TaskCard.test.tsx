@@ -41,4 +41,25 @@ describe('TaskCard', () => {
 
     expect(onSelect).toHaveBeenCalledTimes(1);
   });
+
+  test('renders tag badges when tags are present', () => {
+    render(
+      <TaskCard
+        task={makeTask({ tags: ['feature', 'frontend'] })}
+        isSelected={false}
+        onSelect={() => {}}
+      />,
+    );
+
+    expect(screen.getByText('feature')).toBeInTheDocument();
+    expect(screen.getByText('frontend')).toBeInTheDocument();
+  });
+
+  test('does not render tag list when tags is empty', () => {
+    const { container } = render(
+      <TaskCard task={makeTask({ tags: [] })} isSelected={false} onSelect={() => {}} />,
+    );
+
+    expect(container.querySelector('.tag-list')).toBeNull();
+  });
 });

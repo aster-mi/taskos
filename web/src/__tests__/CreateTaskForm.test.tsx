@@ -55,4 +55,21 @@ describe('CreateTaskForm', () => {
       expect(screen.getByLabelText('Notes')).toHaveValue('');
     });
   });
+
+  test('passes tags as parsed array when submitted with comma-separated input', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn().mockResolvedValue(undefined);
+
+    render(<CreateTaskForm onSubmit={onSubmit} isSubmitting={false} />);
+
+    await user.type(screen.getByLabelText('Title'), 'New feature');
+    await user.type(screen.getByLabelText('Tags'), 'feature, frontend, urgent');
+    await user.click(screen.getByRole('button', { name: 'Create Task' }));
+
+    await waitFor(() =>
+      expect(onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({ tags: ['feature', 'frontend', 'urgent'] }),
+      ),
+    );
+  });
 });
