@@ -1,2 +1,13 @@
 #!/usr/bin/env sh
-exec node --experimental-sqlite --disable-warning=ExperimentalWarning "$(dirname "$0")/../dist/cli.js" "$@"
+# Resolve symlinks to find the real script location (needed for npm link)
+self="$0"
+while [ -L "$self" ]; do
+  self_dir="$(cd "$(dirname "$self")" && pwd)"
+  self="$(readlink "$self")"
+  case "$self" in
+    /*) ;;
+    *) self="$self_dir/$self" ;;
+  esac
+done
+real_dir="$(cd "$(dirname "$self")" && pwd)"
+exec node --experimental-sqlite --disable-warning=ExperimentalWarning "$real_dir/../dist/cli.js" "$@"

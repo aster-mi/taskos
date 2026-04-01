@@ -1,4 +1,5 @@
 import { Command } from 'commander';
+import { realpathSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { registerInitCommand } from './commands/init.js';
 import { registerAddCommand } from './commands/add.js';
@@ -51,6 +52,15 @@ export async function run(argv = process.argv, exitOnError = true): Promise<numb
   }
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  void run();
+if (process.argv[1]) {
+  const realArgv1 = (() => {
+    try {
+      return realpathSync(process.argv[1]);
+    } catch {
+      return process.argv[1];
+    }
+  })();
+  if (import.meta.url === pathToFileURL(realArgv1).href) {
+    void run();
+  }
 }
