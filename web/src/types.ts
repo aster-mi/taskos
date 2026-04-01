@@ -37,6 +37,15 @@ export interface TaskAggregate {
   updated_at: string;
 }
 
+export interface HistoryEvent {
+  id: string;
+  task_id: string;
+  task_title: string;
+  status_from: string;
+  status_to: string;
+  changed_at: string;
+}
+
 export interface CreateTaskInput {
   title: string;
   summary?: string;

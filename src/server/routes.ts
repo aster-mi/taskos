@@ -8,6 +8,7 @@ import {
   createTask,
   getTask,
   getTaskLogs,
+  listEvents,
   listTasks,
   updateTask,
 } from '../models/task.js';
@@ -243,7 +244,18 @@ export function createApiRouter(db: DatabaseSync): Router {
     try {
       const status = parseStatusFilter(req.query.status);
       const priority = parsePriorityFilter(req.query.priority);
-      res.json(listTasks(db, { status, priority }));
+      const tag = typeof req.query.tag === 'string' ? req.query.tag : undefined;
+      res.json(listTasks(db, { status, priority, tag }));
+    } catch (error) {
+      handleError(error, res);
+    }
+  });
+
+  router.get('/history', (req: Request, res: Response) => {
+    try {
+      const since = typeof req.query.since === 'string' ? req.query.since : undefined;
+      const statusTo = typeof req.query.status === 'string' ? req.query.status : undefined;
+      res.json(listEvents(db, { since, statusTo }));
     } catch (error) {
       handleError(error, res);
     }

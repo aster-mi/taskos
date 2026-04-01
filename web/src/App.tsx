@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { createTask, getTaskAggregate, listTasks, markDone, updateTask } from './api';
 import { CreateTaskForm } from './components/CreateTaskForm';
+import { HistoryView } from './components/HistoryView';
+import { KanbanBoard } from './components/KanbanBoard';
 import { TaskDetail } from './components/TaskDetail';
 import { TaskList } from './components/TaskList';
 import type { CreateTaskInput, Task, TaskAggregate, TaskStatus } from './types';
@@ -14,11 +16,21 @@ const FILTERS: Array<{ label: string; value: TaskStatus | 'all' }> = [
   { label: 'Cancelled', value: 'cancelled' },
 ];
 
+type ViewMode = 'list' | 'kanban' | 'history';
+
+const VIEWS: Array<{ label: string; value: ViewMode }> = [
+  { label: 'List', value: 'list' },
+  { label: 'Kanban', value: 'kanban' },
+  { label: 'History', value: 'history' },
+];
+
 export default function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [selectedTask, setSelectedTask] = useState<TaskAggregate | null>(null);
   const [filter, setFilter] = useState<TaskStatus | 'all'>('all');
+  const [tagFilter, setTagFilter] = useState('');
+  const [view, setView] = useState<ViewMode>('list');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [loadingList, setLoadingList] = useState(true);
   const [loadingDetail, setLoadingDetail] = useState(false);
@@ -28,7 +40,10 @@ export default function App() {
   async function refreshTasks(nextSelectedId?: string | null) {
     setLoadingList(true);
     try {
-      const nextTasks = await listTasks(filter === 'all' ? {} : { status: filter });
+      const nextTasks = await listTasks({
+        ...(filter === 'all' ? {} : { status: filter }),
+        tag: tagFilter || undefined,
+      });
       setTasks(nextTasks);
 
       const candidateId = nextSelectedId ?? selectedTaskId ?? nextTasks[0]?.id ?? null;
@@ -45,7 +60,7 @@ export default function App() {
 
   useEffect(() => {
     void refreshTasks();
-  }, [filter]);
+  }, [filter, tagFilter]);
 
   useEffect(() => {
     if (!selectedTaskId) {
@@ -104,6 +119,11 @@ export default function App() {
     }
   }
 
+  function handleFilterChange(value: TaskStatus | 'all') {
+    setFilter(value);
+    setTagFilter('');
+  }
+
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -117,17 +137,36 @@ export default function App() {
           </button>
         </div>
 
+        <div className="view-switcher">
+          {VIEWS.map((v) => (
+            <button
+              key={v.value}
+              className={v.value === view ? 'view-tab active' : 'view-tab'}
+              onClick={() => setView(v.value)}
+            >
+              {v.label}
+            </button>
+          ))}
+        </div>
+
         <div className="filter-tabs" role="tablist" aria-label="Task status filters">
           {FILTERS.map((tab) => (
             <button
               key={tab.value}
               className={tab.value === filter ? 'filter-tab active' : 'filter-tab'}
-              onClick={() => setFilter(tab.value)}
+              onClick={() => handleFilterChange(tab.value)}
             >
               {tab.label}
             </button>
           ))}
         </div>
+
+        <input
+          className="tag-filter-input"
+          placeholder="Filter by tag…"
+          value={tagFilter}
+          onChange={(e) => setTagFilter(e.target.value)}
+        />
 
         <TaskList
           tasks={tasks}
@@ -140,7 +179,15 @@ export default function App() {
       <main className="detail-pane">
         {error ? <div className="error-banner">{error}</div> : null}
 
-        {showCreateForm ? (
+        {view === 'history' ? (
+          <HistoryView />
+        ) : view === 'kanban' ? (
+          <KanbanBoard
+            tasks={tasks}
+            selectedTaskId={selectedTaskId}
+            onSelectTask={setSelectedTaskId}
+          />
+        ) : showCreateForm ? (
           <CreateTaskForm onSubmit={handleCreateTask} isSubmitting={submitting} />
         ) : hasTasks && selectedTask ? (
           <TaskDetail

@@ -1,8 +1,9 @@
-import type { CreateTaskInput, Task, TaskAggregate, TaskPriority, TaskStatus } from './types';
+import type { CreateTaskInput, HistoryEvent, Task, TaskAggregate, TaskPriority, TaskStatus } from './types';
 
 type TaskFilters = {
   status?: TaskStatus;
   priority?: TaskPriority;
+  tag?: string;
 };
 
 async function request<T>(input: string, init?: RequestInit): Promise<T> {
@@ -31,6 +32,9 @@ export function listTasks(filters: TaskFilters = {}): Promise<Task[]> {
   }
   if (filters.priority) {
     params.set('priority', filters.priority);
+  }
+  if (filters.tag) {
+    params.set('tag', filters.tag);
   }
   const query = params.toString();
   return request<Task[]>(`/api/tasks${query ? `?${query}` : ''}`);
@@ -63,4 +67,16 @@ export function markDone(id: string): Promise<Task> {
     method: 'POST',
     body: JSON.stringify({}),
   });
+}
+
+export function listHistory(filters: { since?: string; status?: string } = {}): Promise<HistoryEvent[]> {
+  const params = new URLSearchParams();
+  if (filters.since) {
+    params.set('since', filters.since);
+  }
+  if (filters.status) {
+    params.set('status', filters.status);
+  }
+  const query = params.toString();
+  return request<HistoryEvent[]>(`/api/history${query ? `?${query}` : ''}`);
 }
