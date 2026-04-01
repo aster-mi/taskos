@@ -16,7 +16,7 @@ type ServeOptions = {
 
 const webDistPath = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
-  '../../web/dist',
+  '../web/dist',
 );
 
 function openBrowser(url: string): void {
