@@ -44,6 +44,7 @@ describe('buildAggregate', () => {
       acceptance_criteria: 'Diff reviewed',
       dependencies: ['dep1'],
       references: ['src/index.ts'],
+      tags: [],
       recent_logs: [
         {
           message: 'Opened diff',

@@ -10,6 +10,7 @@ export interface TaskAggregate {
   acceptance_criteria: string;
   dependencies: string[];
   references: string[];
+  tags: string[];
   recent_logs: Array<{ message: string; filepath?: string; created_at: string }>;
   notes: string;
   markdown_file: string;
@@ -27,6 +28,7 @@ export function buildAggregate(task: Task, logs: TaskLog[], tasksDir: string): T
     acceptance_criteria: task.acceptance_criteria,
     dependencies: task.dependencies,
     references: task.references,
+    tags: task.tags,
     recent_logs: logs.slice(0, 10).map((log) => ({
       message: log.message,
       ...(log.filepath ? { filepath: log.filepath } : {}),
